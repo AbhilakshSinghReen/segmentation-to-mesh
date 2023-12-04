@@ -10,6 +10,7 @@ segment_value_to_name = {
 }
 
 def get_polygonal_mesh_from_voxel_data(volume_data, voxel_spacing):
+    # TODO (Abhilaksh): For some segments, measure.marching_cubes fails to create surfaces, fix that.
     verts, faces, normals, values = measure.marching_cubes(
         volume_data,
         level=None,
