@@ -6,6 +6,9 @@ from skimage import measure
 
 segment_value_to_name = {
     1: "spleen",
+    2: "kidney_right",
+    3: "kidney_left",
+    4: "gallbladder",
     5: "liver",
 }
 
@@ -54,6 +57,9 @@ def total_segmentator_output_to_objs(ts_out_file_path, objs_save_folder):
     segment_values = np.unique(volume_data)
 
     for segment_value in segment_values:
+        if int(segment_value) == 0: # background
+            continue
+
         segment_name = segment_value_to_name.get(int(segment_value), None)
         if segment_name is None:
             print(f"No name found for segment value {segment_value}. Skipping this segment...")
