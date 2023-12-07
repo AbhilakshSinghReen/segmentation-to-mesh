@@ -12,8 +12,13 @@ segment_value_to_name = {
     5: "liver",
 }
 
+def ndarr_metadata(nd_arr):
+    unique_values, counts = np.unique(nd_arr, return_counts=True)
+    for value, count in zip(unique_values, counts):
+        print(f"  {value}: {count}")
+
 def get_polygonal_mesh_from_voxel_data(volume_data, voxel_spacing):
-    # TODO (Abhilaksh): For some segments, measure.marching_cubes fails to create surfaces, fix that.
+    # ndarr_metadata(volume_data)
     verts, faces, normals, values = measure.marching_cubes(
         volume_data,
         level=None,
@@ -35,7 +40,13 @@ def write_obj_file(output_path, verts, faces, normals, values):
         for item in faces:
             obj_file.write("f {0}//{0} {1}//{1} {2}//{2}\n".format(item[0],item[1],item[2]))
 
-def save_segment_as_object(output_path, volume_data, voxel_spacing, segment_value):
+def get_average_index_of_1_values(volume_data):
+    val_1_indices = np.where(volume_data == 1)
+    val_1_average_index = np.mean(val_1_indices, axis=1)
+    val_1_average_index
+    
+def save_segment_as_object(output_path, _volume_data, voxel_spacing, segment_value):
+   volume_data = _volume_data.copy()
    volume_data[volume_data != segment_value] = 0
    volume_data[volume_data == segment_value] = 1
    verts, faces, normals, values = get_polygonal_mesh_from_voxel_data(volume_data, voxel_spacing)
@@ -54,6 +65,9 @@ def total_segmentator_output_to_objs(ts_out_file_path, objs_save_folder):
     voxel_spacing = nifti_file.header.get_zooms()
     volume_data = nifti_file.get_fdata()
 
+    # print("Full volume")
+    # ndarr_metadata(volume_data)
+
     segment_values = np.unique(volume_data)
 
     for segment_value in segment_values:
@@ -65,13 +79,14 @@ def total_segmentator_output_to_objs(ts_out_file_path, objs_save_folder):
             print(f"No name found for segment value {segment_value}. Skipping this segment...")
             continue
 
+        # print(f"Segment name: {segment_name}")
         segment_obj_output_path = os.path.join(objs_save_folder, f"{segment_name}.obj")
         save_segment_as_object(segment_obj_output_path, volume_data, voxel_spacing, segment_value)
         print(f"Saved segment {segment_name} as {segment_name}.obj")
 
 if __name__ == "__main__":
     file_path = '1-tsoc.nii.gz'
-    output_dir = "1-tsoc"
+    output_dir = "outputs/1-tsoc"
     os.makedirs(output_dir, exist_ok=True)
 
     total_segmentator_output_to_objs(file_path, output_dir)
